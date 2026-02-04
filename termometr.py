@@ -65,6 +65,7 @@ def get_current_config():
                     if mac in devices:
                         config = devices[mac]
                         config['tid'] = config.get('tid')
+                        config['correction'] = config.get('correction')
                         return config
         except:
             continue
@@ -96,7 +97,7 @@ def read_ds18b20():
 def get_measurement(correction):
     temp = read_mcp9808()
     if temp is None: temp = read_ds18b20()
-    return round(temp - correction, 1) if temp is not None else None
+    return (temp - correction) if temp is not None else None
 
 def send_to_server(tid, temp):
     url = 'http://172.20.10.14:8081/Thermo/Thermo?id={TID}&temperature={TEM}'.format(TID = tid, TEM = round(temp, 1))
@@ -115,7 +116,7 @@ def main():
         sys.exit(1)
 
     tid = config.get('tid')
-    correction = config.get('correction', 0)
+    correction = config.get('correction')
 
     while True:
         try:
@@ -131,5 +132,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
