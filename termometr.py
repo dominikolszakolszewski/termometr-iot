@@ -19,7 +19,7 @@ DATA = {
         'b8:27:cc:cc:cc:cc': {'tid': 'Thermometer_SP_1', 'correction': 0},
     },
     'Biala Podlaska': {
-        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': -1.5},
+        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': 1.5},
     },
 }
 
@@ -96,7 +96,7 @@ def read_ds18b20():
 def get_measurement(correction):
     temp = read_mcp9808()
     if temp is None: temp = read_ds18b20()
-    return round(temp + correction, 1) if temp is not None else None
+    return round(temp - correction, 1) if temp is not None else None
 
 def send_to_server(tid, temp):
     url = 'http://172.20.10.14:8081/Thermo/Thermo?id={TID}&temperature={TEM}'.format(TID = tid, TEM = round(temp, 1))
@@ -131,4 +131,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
