@@ -109,7 +109,7 @@ def get_measurement(correction):
 # WYSYLANIE DANYCH
 def send_to_server(tid, temp):
     #url = 'http://data-grabber.int.aluteam.pl:8081/Thermo/Thermo?id={TID}&temperature={TEM}'.format(TID = tid, TEM = round(temp, 1))
-    url = f'http://172.20.10.14:8081/Thermo/Thermo?id={TEM}&temperature={TEM}'.format(TID = tid, TEM = round(temp, 1))
+    url = 'http://172.20.10.14:8081/Thermo/Thermo?id={TID}&temperature={TEM}'.format(TID=tid, TEM=round(temp, 1))
     try:
         response = requests.get(url, timeout=5)
         return response.status_code == 200
@@ -154,5 +154,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
