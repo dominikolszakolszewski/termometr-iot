@@ -12,14 +12,14 @@ current_version = "1.0"
 
 DATA = {
     'Wolfhagen': {
-        'b8:27:aa:aa:aa:aa': {'tid': 'Thermometer_ATW_1', 'correction': 0},
-        'b8:27:bb:bb:bb:bb': {'tid': 'Thermometer_ATW_2', 'correction': 0},
+        'b8:27:aa:aa:aa:aa': {'tid': 'Thermometer_ATW_1', 'correction': 0.0},
+        'b8:27:bb:bb:bb:bb': {'tid': 'Thermometer_ATW_2', 'correction': 0.0},
     },
     'Ostrow Mazowiecka': {
-        'b8:27:cc:cc:cc:cc': {'tid': 'Thermometer_SP_1', 'correction': 0},
+        'b8:27:cc:cc:cc:cc': {'tid': 'Thermometer_SP_1', 'correction': 0.0},
     },
     'Biala Podlaska': {
-        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': 1.5},
+        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': 15},
     },
 }
 
@@ -63,10 +63,11 @@ def get_current_config():
                     mac = f.read().strip().lower()
                 for loc, devices in DATA.items():
                     if mac in devices:
-                        config = devices[mac]
-                        config['tid'] = config.get('tid')
-                        config['correction'] = config.get('correction')
-                        return config
+                        conf = devices[mac]
+                        return {
+                            'tid': conf.get('tid'),
+                            'correction': float(conf.get('correction', 0.0))
+                        }
         except:
             continue
     return None
@@ -94,13 +95,10 @@ def read_ds18b20():
     except:
         return None
 
-def get_measurement(correction):
-    temp = read_mcp9808()
-    if temp is None: temp = read_ds18b20()
-    return (temp - correction) if temp is not None else None
-
 def send_to_server(tid, temp):
-    url = 'http://172.20.10.14:8081/Thermo/Thermo?id={TID}&temperature={TEM}'.format(TID = tid, TEM = round(temp, 1))
+    # Zaokrąglamy do 1 miejsca po przecinku przed wysyłką
+    final_t = round(float(temp), 1)
+    url = f'http://172.20.10.14:8081/Thermo/Thermo?id={tid}&temperature={final_t}'
     try:
         r = requests.get(url, timeout=5)
         return r.status_code == 200
@@ -115,14 +113,20 @@ def main():
     if not config:
         sys.exit(1)
 
-    tid = config.get('tid')
-    correction = config.get('correction')
+    device_tid = config['tid']
+    device_corr = config['correction']
 
     while True:
         try:
-            temp_val = get_measurement(correction)
-            if temp_val is not None:
-                send_to_server(tid, temp_val)
+            # 1. Pobierz surowy odczyt
+            raw_temp = read_mcp9808()
+            if raw_temp is None:
+                raw_temp = read_ds18b20()
+            
+            # 2. Zastosuj korekcję (DODAWANIE: jeśli chcesz obniżyć o 1.5, wpisz -1.5 w DATA)
+            if raw_temp is not None:
+                corrected_temp = raw_temp + device_corr
+                send_to_server(device_tid, corrected_temp)
             
             time.sleep(1)
         except KeyboardInterrupt:
@@ -132,6 +136,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
