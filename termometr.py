@@ -135,7 +135,7 @@ def main():
                 print(f"[{now}] Temp: {temp_val} C")
                 if send_to_server(tid, temp_val):
                 else:
-                    pass
+                    continue
             else:
                 print(f"[{now}] Blad odczytu czujnika")
                 
@@ -147,6 +147,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
