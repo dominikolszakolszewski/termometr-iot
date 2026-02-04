@@ -19,7 +19,7 @@ DATA = {
         'b8:27:cc:cc:cc:cc': {'tid': 'Thermometer_SP_1', 'correction': 0},
     },
     'Biala Podlaska': {
-        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': -1.5},
+        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': 0},
     },
 }
 
@@ -36,7 +36,6 @@ def wait_for_online(host):
 
 # KONTROLA WERSJI 
 def self_update():
-    print(f"Sprawdzanie aktualizacji... (Wersja: {current_version})")
     try:
         r = requests.get(github_url, timeout=10)
         if r.status_code == 200:
@@ -51,14 +50,13 @@ def self_update():
                     break
             
             if remote_version and remote_version != current_version:
-                print(f"Aktualizacja do wersji: {remote_version}...")
                 with open(__file__, "w", encoding="utf-8") as f:
                     f.write(new_code)
                 os.execv(sys.executable, ['python3'] + sys.argv)
             else:
-                print("Wersja aktualna.")
+                continue
     except Exception as e:
-        print(f"Blad aktualizacji: {e}")
+        pass
 
 # IDENTYFIKACJA MAC
 def get_current_config():
@@ -73,7 +71,6 @@ def get_current_config():
                         config = devices[mac]
                         config['location'] = loc
                         config['mac'] = mac
-                        print(f"Zidentyfikowano: {mac} ({loc})")
                         return config
         except:
             continue
@@ -123,12 +120,10 @@ def main():
     
     config = get_current_config()
     if not config:
-        print('KRYTYCZNY BLAD: NIE ROZPOZNANO URZADZENIA')
         return 
 
     tid = config.get('tid')
     correction = config.get('correction', 0)
-    print(f"Start systemu. TID: {tid}, Korekta: {correction}")
 
     while True:
         try:
@@ -139,9 +134,8 @@ def main():
             if temp_val is not None:
                 print(f"[{now}] Temp: {temp_val} C")
                 if send_to_server(tid, temp_val):
-                    print("WYSLANE")
                 else:
-                    print("BLAD WYSYLANIA")
+                    pass
             else:
                 print(f"[{now}] Blad odczytu czujnika")
                 
@@ -149,11 +143,11 @@ def main():
         except KeyboardInterrupt:
             break 
         except Exception as e:
-            print(f"Blad: {e}")
             time.sleep(5)
 
 if __name__ == "__main__":
     main()
+
 
 
 
