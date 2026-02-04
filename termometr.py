@@ -8,8 +8,8 @@ import requests
 import smbus
 import ntplib
 
-github_url = ""
-current_version = 1.0
+github_url = "https://raw.githubusercontent.com/dominikolszakolszewski/termometr-iot/refs/heads/main/termometr.py"
+current_version = "1.0"
 
 # KONFIGURACJA URZADZEN
 
@@ -40,12 +40,13 @@ def wait_for_online(host):
 # KONTROLA WERSJI 
 def self_update():
 	try:
-		response = requests.get(github_url, timeout = 10)
-		if response.status_code == 200:
-			new_code = response.txt
+		r = requests.get(github_url, timeout = 10)
+		if r.status_code == 200:
+			new_code = r.text
+			remote_version = None
 				
 			for line in new_code.split('\n'):
-				if 'current version =' in line:
+				if 'current_version =' in line:
 					try:
 						remote_version = line.split('"')[1]
 					except IndexError:
@@ -73,8 +74,8 @@ def get_current_config():
 						config = devices[mac]
 						config['location'] = loc
 						config['mac'] = mac
-						return config
 						print(f"Znaleziono konfiguracje dla {mac} {loc}")
+						return config
 		except Exception as e:
 			print(f"Blad podczas sprawdzania interfejsu {iface}: {e}")
 			continue
@@ -155,6 +156,10 @@ def send_to_server(tid, temp):
 	
 # WLASCIWY PROGRAM
 def main():
+	wait_for_online("8.8.8.8")
+	
+	self_update()
+	
 	config = get_current_config()
 	
 	if not config:
