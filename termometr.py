@@ -19,7 +19,7 @@ DATA = {
         'b8:27:cc:cc:cc:cc': {'tid': 'Thermometer_SP_1', 'correction': 0},
     },
     'Biala Podlaska': {
-        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': 0},
+        'b8:27:eb:13:27:63': {'tid': 'Thermometer_ATP_6', 'correction': -1.5},
     },
 }
 
@@ -131,3 +131,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
